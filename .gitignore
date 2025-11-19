@@ -1,0 +1,5 @@
+*.pdf
+.gradle
+.idea
+.vscode
+build
