@@ -18,9 +18,9 @@ public class IncidentReportServiceImpl implements IncidentReportService {
         RequestPDFData dto = new RequestPDFData(
                 "Unit Test 123",
                 Instant.parse("2025-11-10T08:30:00Z"),
-                "PT Berau Coal",
+                "Dimana aja",
                 "Kategori Insiden",
-                "KEGAGALAN SISTEM HIDROLIK",
+                "Test Ganti Title",
                 "1 Operator, 2 Mekanik",
                 "Pada tanggal 15 Oktober 2024 pukul 14:35 WIB, terjadi kegagalan sistem hidrolik pada unit Excavator HD 785-7 dengan nomor unit EX-127 yang sedang beroperasi di area Pit 3 Selatan, Lati Mine. Insiden terjadi saat operator sedang melakukan aktivitas penggalian material overburden.\n" +
                         "\n" +

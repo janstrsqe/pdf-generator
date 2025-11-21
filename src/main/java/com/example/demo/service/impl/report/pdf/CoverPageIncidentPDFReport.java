@@ -1,7 +1,9 @@
 package com.example.demo.service.impl.report.pdf;
 
+import com.example.demo.constants.TextAlignment;
 import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
+import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -15,8 +17,8 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class CoverPageIncidentPDFReport extends IncidentPDFPage {
 
-    public CoverPageIncidentPDFReport(PDFBoxBuilder pdfBoxBuilder) {
-        super(pdfBoxBuilder);
+    public CoverPageIncidentPDFReport(PDFBoxBuilder pdfBoxBuilder, PDFTableBuilder pdfTableBuilder) {
+        super(pdfBoxBuilder, pdfTableBuilder);
     }
 
     @AllArgsConstructor
@@ -65,7 +67,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                         .font(defaultPDFComponent.getFontRegular())
                         .fontColor(Color.WHITE)
                         .fontSize(30)
-                        .align(PDFBoxBuilder.Align.CENTER)
+                        .align(TextAlignment.CENTER)
                         .build())
                 .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                         .strokeLine(2)
@@ -91,7 +93,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontBold())
                                 .fontColor(Color.WHITE)
                                 .fontSize(95)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -109,7 +111,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(45)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -138,7 +140,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(greenAdjusted)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -155,7 +157,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -187,7 +189,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(greenAdjusted)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -204,7 +206,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -238,7 +240,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(greenAdjusted)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -255,7 +257,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build());
 
@@ -279,7 +281,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(20)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build());
 
@@ -296,7 +298,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(20)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build());
 
@@ -342,7 +344,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(20)
-                                .align(PDFBoxBuilder.Align.RIGHT)
+                                .align(TextAlignment.RIGHT)
                                 .build())
                         .build());
 
@@ -360,7 +362,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(20)
-                                .align(PDFBoxBuilder.Align.RIGHT)
+                                .align(TextAlignment.RIGHT)
                                 .build())
                         .build());
 

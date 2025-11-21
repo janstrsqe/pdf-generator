@@ -1,8 +1,8 @@
 package com.example.demo.util;
 
+import com.example.demo.constants.TextAlignment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.springframework.stereotype.Component;
@@ -14,10 +14,6 @@ import java.util.List;
 
 @Component
 public class PDFBoxBuilder {
-
-    public enum Align {
-        LEFT, CENTER, RIGHT
-    }
 
     @Builder
     @AllArgsConstructor
@@ -52,7 +48,7 @@ public class PDFBoxBuilder {
         protected float fontSize;
         protected PDFont font;
         protected Color fontColor;
-        protected Align align;
+        protected TextAlignment align;
     }
 
     public void drawBox(PDFBoxDrawingParam param, Color sliceColor) throws IOException {

@@ -1,7 +1,8 @@
 package com.example.demo.service.impl.report.pdf;
 
-
+import com.example.demo.constants.TextAlignment;
 import com.example.demo.util.PDFBoxBuilder;
+import com.example.demo.util.PDFTableBuilder;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -16,6 +17,7 @@ import java.io.IOException;
 public class IncidentPDFPage {
 
     protected final PDFBoxBuilder pdfBoxBuilder;
+    protected final PDFTableBuilder pdfTableBuilder;
 
     public PDPage initPage(DefaultPDFComponent defaultPDFComponent){
         PDPage page = new PDPage(defaultPDFComponent.getCustomSize());
@@ -50,7 +52,7 @@ public class IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build());
 
@@ -67,7 +69,7 @@ public class IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontBold())
                                 .fontColor(Color.WHITE)
                                 .fontSize(55)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build());
 
@@ -84,7 +86,7 @@ public class IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(new Color(33, 87, 50))
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                                 .strokeColor(Color.WHITE)

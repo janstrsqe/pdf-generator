@@ -1,9 +1,10 @@
 package com.example.demo.service.impl.report.pdf;
 
+import com.example.demo.constants.TextAlignment;
 import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
+import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -16,8 +17,8 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class Slide1IncidentPDFReport extends IncidentPDFPage {
 
-    public Slide1IncidentPDFReport(PDFBoxBuilder pdfBoxBuilder) {
-        super(pdfBoxBuilder);
+    public Slide1IncidentPDFReport(PDFBoxBuilder pdfBoxBuilder, PDFTableBuilder pdfTableBuilder) {
+        super(pdfBoxBuilder, pdfTableBuilder);
     }
 
     @AllArgsConstructor
@@ -95,7 +96,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.GRAY)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                                 .strokeColor(null)
@@ -119,7 +120,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.BLACK)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
@@ -157,7 +158,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.GRAY)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
@@ -175,7 +176,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.BLACK)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
@@ -212,7 +213,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.GRAY)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
@@ -230,7 +231,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.BLACK)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                                 .strokeColor(null)
@@ -273,7 +274,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.GRAY)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
@@ -291,7 +292,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.BLACK)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
@@ -309,7 +310,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontBold())
                                 .fontColor(Color.WHITE)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                                 .strokeColor(new Color(33, 87, 50))
@@ -333,7 +334,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.BLACK)
                                 .fontSize(30)
-                                .align(PDFBoxBuilder.Align.LEFT)
+                                .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
@@ -356,7 +357,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(new Color(177, 30, 27))
                                 .fontSize(50)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                                 .strokeLine(10)
@@ -380,7 +381,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(new Color(212, 36, 34))
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build()
         );
@@ -398,7 +399,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.GRAY)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build()
         );
@@ -417,7 +418,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(new Color(128, 78, 19))
                                 .fontSize(50)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                                 .strokeLine(10)
@@ -441,7 +442,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(new Color(161, 106, 25))
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build()
         );
@@ -459,7 +460,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.GRAY)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build()
         );
@@ -478,7 +479,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(new Color(35, 70, 221))
                                 .fontSize(50)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
                                 .strokeLine(10)
@@ -502,7 +503,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(new Color(114, 147, 246))
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build()
         );
@@ -520,7 +521,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.GRAY)
                                 .fontSize(25)
-                                .align(PDFBoxBuilder.Align.CENTER)
+                                .align(TextAlignment.CENTER)
                                 .build())
                         .build()
         );
