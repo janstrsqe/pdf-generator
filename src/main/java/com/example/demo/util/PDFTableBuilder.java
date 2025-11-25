@@ -60,6 +60,7 @@ public class PDFTableBuilder {
         private Color evenRowBgColor;
         private Color oddRowBgColor;
         private PDFont font;
+        private PDFont fontBold;
     }
 
     @Data
@@ -71,84 +72,127 @@ public class PDFTableBuilder {
         private Color lineColor;
         private float borderWidth;
         private float gridLineWidth;
-        private float padding;
+
+        @Builder.Default
+        private float padding = 5;
 
         @Builder.Default
         private boolean showHeader = true;
+
+        private List<Color> rowColors;
+
+        @Builder.Default
+        private boolean gridTop = true;
+
+        @Builder.Default
+        private boolean gridBottom = true;
+
+        @Builder.Default
+        private boolean gridLeft = true;
+
+        @Builder.Default
+        private boolean gridRight = true;
+
+        public TableStyle gridLine(float gridLineWidth, boolean gridTop, boolean gridBottom, boolean gridLeft, boolean gridRight){
+            this.gridLineWidth = gridLineWidth;
+            this.gridTop = gridTop;
+            this.gridBottom = gridBottom;
+            this.gridLeft = gridLeft;
+            this.gridRight = gridRight;
+            return this;
+        }
     }
 
-    public void drawTable(
-            PDFTableParam param
-    ) throws IOException {
+    @Data
+    @AllArgsConstructor
+    public static class TextSegment {
+        private String text;
+        private PDFont font;
+        private float fontSize;
+    }
 
-        float padding = 5;
-        float leading = param.tableStyle.headerStyle.headerFontSize * 1.3f;
+    public void drawTable(PDFTableParam param) throws IOException {
+
+        float padding = param.tableStyle.padding;
+        float leading = param.tableStyle.bodyStyle.bodyFontSize * 1.3f;
+
+        if (param.tableStyle.headerStyle.headerFontSize > 0) {
+            leading = param.tableStyle.headerStyle.headerFontSize * 1.3f;
+        }
 
         float tableWidth = 0;
         for (TableColumn col : param.columns)
             tableWidth += col.width;
 
         List<Float> rowHeights = new ArrayList<>();
-        float countedRowHeight;
         for (List<String> row : param.rows) {
-            if (param.tableStyle.bodyStyle.getRowHeight() > 0) {
-                countedRowHeight = param.tableStyle.bodyStyle.getRowHeight();
-            } else {
-                countedRowHeight = getRowHeight(param.columns, row, param.tableStyle.bodyStyle.font, param.tableStyle.bodyStyle.bodyFontSize, leading, padding);
-            }
-            rowHeights.add(countedRowHeight);
+            float rh = param.tableStyle.bodyStyle.getRowHeight() > 0
+                    ? param.tableStyle.bodyStyle.getRowHeight()
+                    : getRowHeight(param.columns, row,
+                    param.tableStyle.bodyStyle.font,
+                    param.tableStyle.bodyStyle.fontBold,
+                    param.tableStyle.bodyStyle.bodyFontSize,
+                    leading, padding);
+
+            rowHeights.add(rh);
         }
 
         List<String> headerRow = getHeaderRow(param.columns);
-        float headerHeight;
-        if (param.tableStyle.getHeaderStyle().getHeaderHeight() > 0){
-            headerHeight = param.tableStyle.getHeaderStyle().getHeaderHeight();
-        } else {
-            headerHeight = getRowHeight(param.columns, headerRow, param.tableStyle.headerStyle.font, param.tableStyle.headerStyle.headerFontSize, leading, padding);
-        }
+        float headerHeight = param.tableStyle.headerStyle.getHeaderHeight() > 0
+                ? param.tableStyle.headerStyle.getHeaderHeight()
+                : getRowHeight(param.columns, headerRow,
+                param.tableStyle.headerStyle.font,
+                param.tableStyle.headerStyle.font,
+                param.tableStyle.headerStyle.headerFontSize,
+                leading, padding);
 
-        // ---- 1. Compute total height with/without header ----
         float tableHeight = param.tableStyle.showHeader ? headerHeight : 0;
         for (float h : rowHeights) tableHeight += h;
 
-        // ---- 2. Draw rounded border ----
-        drawFullRoundedBorder(
-                param.cs, param.tablePosition.x, param.tablePosition.y - tableHeight, tableWidth, tableHeight,
-                param.tableStyle.cornerRadius, param.tableStyle.lineColor, param.tableStyle.borderWidth
-        );
+        param.cs.saveGraphicsState();
+        addRoundedClip(param.cs,
+                param.tablePosition.x,
+                param.tablePosition.y - tableHeight,
+                tableWidth,
+                tableHeight,
+                param.tableStyle.cornerRadius);
 
         float cursorY = param.tablePosition.y;
 
-        // ---- 3. Draw header (if enabled) ----
         if (param.tableStyle.showHeader) {
 
             drawRoundedHeaderFill(
-                    param.cs, param.tablePosition.x, param.tablePosition.y - headerHeight, tableWidth, headerHeight,
-                    param.tableStyle.cornerRadius, param.tableStyle.headerStyle.headerBgColor
+                    param.cs,
+                    param.tablePosition.x,
+                    param.tablePosition.y - headerHeight,
+                    tableWidth,
+                    headerHeight,
+                    param.tableStyle.cornerRadius,
+                    param.tableStyle.headerStyle.headerBgColor
             );
 
-            float headerCenterY = param.tablePosition.y - (headerHeight / 2f) - (param.tableStyle.headerStyle.headerFontSize * 0.35f);
+            float headerCenterY = param.tablePosition.y
+                    - (headerHeight / 2f)
+                    - (param.tableStyle.headerStyle.headerFontSize * 0.35f);
 
             float cursorX = param.tablePosition.x;
-
             for (int i = 0; i < param.columns.size(); i++) {
-
                 String text = headerRow.get(i);
                 TableColumn col = param.columns.get(i);
 
                 float colWidth = col.width;
-                float textWidth = param.tableStyle.headerStyle.font.getStringWidth(text) / 1000 * param.tableStyle.headerStyle.headerFontSize;
+                float textWidth = param.tableStyle.headerStyle.font.getStringWidth(text)
+                        / 1000 * param.tableStyle.headerStyle.headerFontSize;
 
-                float textX = cursorX + padding;
-
-                textX = switch (col.alignHeader) {
+                float textX = switch (col.alignHeader) {
                     case CENTER -> cursorX + (colWidth - textWidth) / 2f;
                     case RIGHT -> cursorX + colWidth - textWidth - padding;
-                    default -> textX;
+                    default -> cursorX + padding;
                 };
 
                 param.cs.beginText();
-                param.cs.setFont(param.tableStyle.headerStyle.font, param.tableStyle.headerStyle.headerFontSize);
+                param.cs.setFont(param.tableStyle.headerStyle.font,
+                        param.tableStyle.headerStyle.headerFontSize);
                 param.cs.setNonStrokingColor(param.tableStyle.headerStyle.headerTextColor);
                 param.cs.newLineAtOffset(textX, headerCenterY);
                 param.cs.showText(text);
@@ -157,46 +201,110 @@ public class PDFTableBuilder {
                 cursorX += colWidth;
             }
 
-            cursorY = param.tablePosition.y - headerHeight; // move below header
+            if (param.tableStyle.showHeader) {
+                cursorY = param.tablePosition.y - headerHeight;
+            } else {
+                cursorY = param.tablePosition.y;
+            }
         }
 
-        // ---- 4. Draw rows + optional grid ----
         for (int r = 0; r < param.rows.size(); r++) {
             float rh = rowHeights.get(r);
             float rowTop = cursorY;
             float rowBottom = cursorY - rh;
 
-            // Background
-            param.cs.setNonStrokingColor((r % 2 == 0) ? param.tableStyle.bodyStyle.evenRowBgColor : param.tableStyle.bodyStyle.oddRowBgColor);
+            Color bgColor;
+            List<Color> customColors = param.tableStyle.rowColors;
+            if (customColors != null && r < customColors.size() && customColors.get(r) != null) {
+                bgColor = customColors.get(r);
+            } else {
+                bgColor = (r % 2 == 0)
+                        ? param.tableStyle.bodyStyle.evenRowBgColor
+                        : param.tableStyle.bodyStyle.oddRowBgColor;
+            }
+
+            param.cs.setNonStrokingColor(bgColor);
             param.cs.addRect(param.tablePosition.x, rowBottom, tableWidth, rh);
             param.cs.fill();
 
-            // Text
-            drawRowContent(param.cs, param.tablePosition.x, rowTop, param.columns, param.rows.get(r), rh, param.tableStyle.bodyStyle.font, param.tableStyle.bodyStyle.bodyFontSize, param.tableStyle.bodyStyle.bodyTextColor, leading, padding);
-
-            // ---- Draw internal grid if enabled ----
-            if (param.tableStyle.gridLineWidth > 0) {
-                param.cs.setStrokingColor(param.tableStyle.lineColor);
-                param.cs.setLineWidth(param.tableStyle.gridLineWidth);
-
-                // Horizontal line
-                param.cs.moveTo(param.tablePosition.x, rowBottom);
-                param.cs.lineTo(param.tablePosition.x + tableWidth, rowBottom);
-                param.cs.stroke();
-
-                // Vertical lines
-                float cx = param.tablePosition.x;
-                for (TableColumn col : param.columns) {
-                    cx += col.width;
-                    param.cs.moveTo(cx, rowBottom);
-                    param.cs.lineTo(cx, rowTop);
-                    param.cs.stroke();
-                }
-            }
+            drawRowContent(param.cs,
+                    param.tablePosition.x,
+                    rowTop,
+                    param.columns,
+                    param.rows.get(r),
+                    rh,
+                    param.tableStyle.bodyStyle.font,
+                    param.tableStyle.bodyStyle.fontBold,
+                    param.tableStyle.bodyStyle.bodyFontSize,
+                    param.tableStyle.bodyStyle.bodyTextColor,
+                    leading,
+                    padding);
 
             cursorY -= rh;
         }
+
+        param.cs.restoreGraphicsState();
+
+        if (param.tableStyle.gridLineWidth > 0) {
+            TableStyle ts = param.tableStyle;
+
+            if (ts.lineColor != null) {
+                param.cs.setStrokingColor(ts.lineColor);
+                param.cs.setLineWidth(ts.gridLineWidth);
+            }
+
+            float x = param.tablePosition.x;
+            float yTop = param.tablePosition.y;
+            float yBottom = param.tablePosition.y - tableHeight;
+            float right = x + tableWidth;
+
+            if (ts.gridTop && ts.showHeader) {
+                float headerBottom = param.tablePosition.y - headerHeight;
+                param.cs.moveTo(x, headerBottom);
+                param.cs.lineTo(right, headerBottom);
+                param.cs.stroke();
+            }
+
+            float cy = param.tableStyle.showHeader
+                    ? yTop - headerHeight
+                    : yTop;
+            for (float rh : rowHeights) {
+                float rowBottom = cy - rh;
+
+                if (ts.gridBottom && rowBottom > yBottom) {
+                    param.cs.moveTo(x, rowBottom);
+                    param.cs.lineTo(right, rowBottom);
+                    param.cs.stroke();
+                }
+
+                cy -= rh;
+            }
+
+            if (ts.gridLeft && ts.borderWidth <= 0) {
+                param.cs.moveTo(x, yTop);
+                param.cs.lineTo(x, yBottom);
+                param.cs.stroke();
+            }
+
+            if (ts.gridRight && ts.borderWidth <= 0) {
+                param.cs.moveTo(right, yTop);
+                param.cs.lineTo(right, yBottom);
+                param.cs.stroke();
+            }
+        }
+
+        drawFullRoundedBorder(
+                param.cs,
+                param.tablePosition.x,
+                param.tablePosition.y - tableHeight,
+                tableWidth,
+                tableHeight,
+                param.tableStyle.cornerRadius,
+                param.tableStyle.lineColor,
+                param.tableStyle.borderWidth
+        );
     }
+
 
     private void drawFullRoundedBorder(
             PDPageContentStream cs,
@@ -207,28 +315,104 @@ public class PDFTableBuilder {
             float borderWidth
     ) throws IOException {
 
+        if (borderWidth <= 0 || borderColor == null) {
+            return;
+        }
+
+        x += borderWidth / 2f;
+        y += borderWidth / 2f;
+        width -= borderWidth;
+        height -= borderWidth;
+
         float right = x + width;
         float top = y + height;
 
-        cs.setLineWidth(borderWidth);
+        float c = 0.552284749831f * radius;
+
         cs.setStrokingColor(borderColor);
+        cs.setLineWidth(borderWidth);
+        cs.setLineCapStyle(1);
 
         cs.moveTo(x + radius, y);
         cs.lineTo(right - radius, y);
-        cs.curveTo(right, y, right, y, right, y + radius);
+
+        cs.curveTo(
+                right - radius + c, y,
+                right, y + radius - c,
+                right, y + radius
+        );
 
         cs.lineTo(right, top - radius);
-        cs.curveTo(right, top, right, top, right - radius, top);
+
+        cs.curveTo(
+                right, top - radius + c,
+                right - radius + c, top,
+                right - radius, top
+        );
 
         cs.lineTo(x + radius, top);
-        cs.curveTo(x, top, x, top, x, top - radius);
+
+        cs.curveTo(
+                x + radius - c, top,
+                x, top - radius + c,
+                x, top - radius
+        );
 
         cs.lineTo(x, y + radius);
-        cs.curveTo(x, y, x, y, x + radius, y);
 
-        cs.closePath();
+        cs.curveTo(
+                x, y + radius - c,
+                x + radius - c, y,
+                x + radius, y
+        );
+
         cs.stroke();
     }
+
+    private void addRoundedClip(PDPageContentStream cs,
+                                float x, float y,
+                                float w, float h, float r) throws IOException {
+
+        float c = 0.552284749831f * r;
+
+        cs.moveTo(x + r, y);
+        cs.lineTo(x + w - r, y);
+
+        cs.curveTo(
+                x + w - r + c, y,
+                x + w, y + r - c,
+                x + w, y + r
+        );
+
+        cs.lineTo(x + w, y + h - r);
+
+        cs.curveTo(
+                x + w, y + h - r + c,
+                x + w - r + c, y + h,
+                x + w - r, y + h
+        );
+
+        cs.lineTo(x + r, y + h);
+
+        cs.curveTo(
+                x + r - c, y + h,
+                x, y + h - r + c,
+                x, y + h - r
+        );
+
+        cs.lineTo(x, y + r);
+
+        cs.curveTo(
+                x, y + r - c,
+                x + r - c, y,
+                x + r, y
+        );
+
+        cs.closePath();
+        cs.clip();
+    }
+
+
     private void drawRoundedHeaderFill(
             PDPageContentStream cs,
             float x, float y,
@@ -240,7 +424,9 @@ public class PDFTableBuilder {
         float right = x + width;
         float top = y + height;
 
-        cs.setNonStrokingColor(bgColor);
+        if (bgColor != null){
+            cs.setNonStrokingColor(bgColor);
+        }
 
         cs.moveTo(x, y);
         cs.lineTo(x, top - radius);
@@ -262,7 +448,8 @@ public class PDFTableBuilder {
     private float getRowHeight(
             List<TableColumn> columns,
             List<String> row,
-            PDFont font,
+            PDFont normalFont,
+            PDFont boldFont,
             float fontSize,
             float leading,
             float padding
@@ -271,60 +458,22 @@ public class PDFTableBuilder {
         float max = 0;
 
         for (int i = 0; i < columns.size(); i++) {
-            List<String> wrapped = wrapText(row.get(i), font, fontSize, columns.get(i).width - padding * 2);
+            float textAreaWidth = columns.get(i).width - padding * 2;
+
+            List<List<TextSegment>> wrapped = wrapTextSegmented(
+                    row.get(i),
+                    normalFont,
+                    boldFont,
+                    fontSize,
+                    textAreaWidth
+            );
+
             float h = wrapped.size() * leading + padding * 2;
+
             if (h > max) max = h;
         }
+
         return max;
-    }
-
-    private List<String> wrapText(
-            String text,
-            PDFont font,
-            float fontSize,
-            float maxWidth
-    ) throws IOException {
-
-        if (text == null) return List.of("");
-
-        String[] paragraphs = text
-                .replace("\r", "")
-                .split("\n");
-
-        List<String> lines = new ArrayList<>();
-
-        for (String para : paragraphs) {
-
-            String p = para.trim();
-
-            if (p.isEmpty()) {
-                lines.add("");  // add blank line
-                continue;
-            }
-
-            String[] words = p.split(" ");
-            StringBuilder current = new StringBuilder();
-
-            for (String w : words) {
-                if (w.isEmpty()) continue;
-
-                String test = current + w + " ";
-                float width = font.getStringWidth(test) / 1000 * fontSize;
-
-                if (width > maxWidth && current.length() > 0) {
-                    lines.add(current.toString().trim());
-                    current = new StringBuilder(w + " ");
-                } else {
-                    current.append(w).append(" ");
-                }
-            }
-
-            if (!current.isEmpty()) {
-                lines.add(current.toString().trim());
-            }
-        }
-
-        return lines;
     }
 
     private void drawRowContent(
@@ -335,6 +484,7 @@ public class PDFTableBuilder {
             List<String> row,
             float rowHeight,
             PDFont font,
+            PDFont boldFont,
             float fontSize,
             Color textColor,
             float leading,
@@ -348,30 +498,39 @@ public class PDFTableBuilder {
             float colWidth = columns.get(i).width;
             float textAreaWidth = colWidth - padding * 2;
 
-            List<String> lines = wrapText(
+            List<List<TextSegment>> wrappedLines = wrapTextSegmented(
                     row.get(i),
                     font,
+                    boldFont,
                     fontSize,
                     textAreaWidth
             );
 
             float textY = topY - padding - fontSize;
 
-            for (String line : lines) {
+            for (List<TextSegment> line : wrappedLines) {
 
-                float textWidth = font.getStringWidth(line) / 1000 * fontSize;
+                float lineWidth = 0;
+                for (TextSegment seg : line) {
+                    lineWidth += seg.getFont().getStringWidth(seg.getText())
+                            / 1000 * seg.getFontSize();
+                }
 
                 float textX = switch (columns.get(i).alignBody) {
-                    case CENTER -> cursorX + (colWidth - textWidth) / 2f;
-                    case RIGHT -> cursorX + colWidth - textWidth - padding;
+                    case CENTER -> cursorX + (colWidth - lineWidth) / 2f;
+                    case RIGHT -> cursorX + colWidth - lineWidth - padding;
                     default -> cursorX + padding;
                 };
 
                 cs.beginText();
-                cs.setFont(font, fontSize);
-                cs.setNonStrokingColor(textColor);
                 cs.newLineAtOffset(textX, textY);
-                cs.showText(line);
+                cs.setNonStrokingColor(textColor);
+
+                for (TextSegment seg : line) {
+                    cs.setFont(seg.getFont(), seg.getFontSize());
+                    cs.showText(seg.getText());
+                }
+
                 cs.endText();
 
                 textY -= leading;
@@ -379,6 +538,135 @@ public class PDFTableBuilder {
 
             cursorX += colWidth;
         }
+    }
+
+    private List<TextSegment> parseMarkdownSegments(
+            String text,
+            PDFont normalFont,
+            PDFont boldFont,
+            float fontSize
+    ) {
+        List<TextSegment> segments = new ArrayList<>();
+
+        StringBuilder buffer = new StringBuilder();
+        boolean bold = false;
+
+        for (int i = 0; i < text.length(); i++) {
+
+            if (text.startsWith("**", i)) {
+
+                if (!buffer.isEmpty()) {
+                    segments.add(new TextSegment(
+                            buffer.toString(),
+                            bold ? boldFont : normalFont,
+                            fontSize
+                    ));
+                    buffer.setLength(0);
+                }
+
+                bold = !bold;
+                i++;
+                continue;
+            }
+
+            buffer.append(text.charAt(i));
+        }
+
+        if (!buffer.isEmpty()) {
+            segments.add(new TextSegment(
+                    buffer.toString(),
+                    bold ? boldFont : normalFont,
+                    fontSize
+            ));
+        }
+
+        // Safety: never return empty list
+        if (segments.isEmpty()) {
+            segments.add(new TextSegment(text, normalFont, fontSize));
+        }
+
+        return segments;
+    }
+
+    private List<List<TextSegment>> wrapTextSegmented(
+            String text,
+            PDFont normalFont,
+            PDFont boldFont,
+            float fontSize,
+            float maxWidth
+    ) throws IOException {
+
+        List<List<TextSegment>> resultLines = new ArrayList<>();
+
+        String[] paragraphs = text.replace("\r", "").split("\n");
+
+        for (String para : paragraphs) {
+
+            List<TextSegment> segments = parseMarkdownSegments(
+                    para,
+                    normalFont,
+                    boldFont,
+                    fontSize
+            );
+
+            List<TextSegment> currentLine = new ArrayList<>();
+            float currentWidth = 0;
+
+            for (TextSegment seg : segments) {
+
+                List<String> tokens = tokenizePreserveSpaces(seg.getText());
+
+                for (String token : tokens) {
+
+                    float tokenWidth = seg.getFont().getStringWidth(token)
+                            / 1000f * seg.getFontSize();
+
+                    if (currentWidth + tokenWidth > maxWidth && !currentLine.isEmpty()) {
+                        resultLines.add(new ArrayList<>(currentLine));
+                        currentLine.clear();
+                        currentWidth = 0;
+                    }
+
+                    currentLine.add(new TextSegment(
+                            token,
+                            seg.getFont(),
+                            seg.getFontSize()
+                    ));
+
+                    currentWidth += tokenWidth;
+                }
+            }
+
+            if (!currentLine.isEmpty()) {
+                resultLines.add(currentLine);
+            }
+        }
+
+        return resultLines;
+    }
+
+    private List<String> tokenizePreserveSpaces(String text) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder buffer = new StringBuilder();
+
+        for (char c : text.toCharArray()) {
+
+            if (c == ' ') {
+                if (!buffer.isEmpty()) {
+                    tokens.add(buffer.toString());
+                    buffer.setLength(0);
+                }
+                tokens.add(" ");
+            } else {
+                buffer.append(c);
+            }
+        }
+
+        if (!buffer.isEmpty()) {
+            tokens.add(buffer.toString());
+        }
+
+        return tokens;
     }
 
 }

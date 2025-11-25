@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
@@ -37,10 +38,10 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, 'Pukul' hh:mm 'WIB'");
         String formattedDate = request.dateToWIB().format(formatter);
         return new Slide1Data(formattedDate,
-                request.getLocation(), request.getCategory(),
+                request.getLocation().getLocationName(), request.getCategory(),
                 request.getPersonnelCategories(),
-                request.getIncidentDescription(), request.getInjuriesPerson(),
-                request.getBrokenEquipment(), request.getHoursDowntime());
+                request.getIncidentDescription(), request.getSummary().getInjuriesPerson(),
+                request.getSummary().getBrokenEquipment(), request.getSummary().getHoursDowntime());
     }
 
     public void generatePage(
@@ -60,241 +61,58 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
         float boxX = 110;
         float boxY = pageHeight - 380;
         float boxWidth = 1028;
-        float boxHeight = 120;
+        float boxHeight = 145;
         float spaceOfBox = 30;
-        Color sliceColor = new Color(33, 87, 50);
 
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX,
-                                boxY,
-                                boxWidth,
-                                boxHeight
-                        ))
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(new Color(249, 250, 251))
-                                .strokeLine(2)
-                                .fillColor(new Color(249, 250, 251))
-                                .rounded(0)
-                                .build())
-                        .build(),
-                 sliceColor
+        drawInfoSection(
+                cs,
+                boxX, boxY,
+                boxWidth, boxHeight,
+                "Tanggal & Waktu Kejadian",
+                slide1Data.date,
+                80, 20,
+                30, -20,
+                defaultPDFComponent,
+                defaultPDFComponent.icons.get("calendar")
         );
 
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + 80,
-                                pageHeight - 360,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Tanggal & Waktu Kejadian")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.GRAY)
-                                .fontSize(25)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(null)
-                                .strokeLine(0)
-                                .fillColor(null)
-                                .rounded(0)
-                                .build())
-                        .build()
+        drawInfoSection(
+                cs,
+                boxX + boxWidth + spaceOfBox,
+                boxY,
+                boxWidth, boxHeight,
+                "Lokasi Insiden",
+                slide1Data.location,
+                70, 20,
+                20, -20,
+                defaultPDFComponent,
+                defaultPDFComponent.icons.get("location")
         );
 
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + 30,
-                                pageHeight - 400,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(slide1Data.date)
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.BLACK)
-                                .fontSize(30)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .build()
+        drawInfoSection(
+                cs,
+                boxX,
+                boxY - boxHeight - spaceOfBox,
+                boxWidth, boxHeight,
+                "Kategori Insiden",
+                slide1Data.category,
+                80, 20,
+                30, -20,
+                defaultPDFComponent,
+                defaultPDFComponent.icons.get("warning")
         );
 
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + boxWidth + spaceOfBox,
-                                boxY,
-                                boxWidth,
-                                boxHeight
-                        ))
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(new Color(249, 250, 251))
-                                .strokeLine(2)
-                                .fillColor(new Color(249, 250, 251))
-                                .rounded(0)
-                                .build())
-                        .build(),
-                sliceColor
-        );
-
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + boxWidth + spaceOfBox + 70,
-                                pageHeight - 360,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Lokasi Insiden")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.GRAY)
-                                .fontSize(25)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + boxWidth + spaceOfBox + 20,
-                                pageHeight - 400,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(slide1Data.location)
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.BLACK)
-                                .fontSize(30)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX,
-                                boxY - boxHeight - spaceOfBox,
-                                boxWidth,
-                                boxHeight
-                        ))
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(new Color(249, 250, 251))
-                                .strokeLine(2)
-                                .fillColor(new Color(249, 250, 251))
-                                .rounded(0)
-                                .build())
-                        .build(),
-                sliceColor
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + 80,
-                                pageHeight - 510,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Kategori Insiden")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.GRAY)
-                                .fontSize(25)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + 30,
-                                pageHeight - 550,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(slide1Data.category)
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.BLACK)
-                                .fontSize(30)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(null)
-                                .strokeLine(0)
-                                .fillColor(null)
-                                .rounded(0)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + boxWidth + spaceOfBox,
-                                boxY - boxHeight - spaceOfBox,
-                                boxWidth,
-                                boxHeight
-                        ))
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(new Color(249, 250, 251))
-                                .strokeLine(2)
-                                .fillColor(new Color(249, 250, 251))
-                                .rounded(0)
-                                .build())
-                        .build(),
-                sliceColor
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + boxWidth + spaceOfBox + 80,
-                                pageHeight - 510,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Personel Terlibat")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.GRAY)
-                                .fontSize(25)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX + boxWidth + spaceOfBox + 30,
-                                pageHeight - 550,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(slide1Data.personnelCategories)
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.BLACK)
-                                .fontSize(30)
-                                .align(TextAlignment.LEFT)
-                                .build())
-                        .build()
+        drawInfoSection(
+                cs,
+                boxX + boxWidth + spaceOfBox,
+                boxY - boxHeight - spaceOfBox,
+                boxWidth, boxHeight,
+                "Personel Terlibat",
+                slide1Data.personnelCategories,
+                80, 20,
+                30, -20,
+                defaultPDFComponent,
+                defaultPDFComponent.icons.get("group")
         );
 
         pdfBoxBuilder.drawBox(
@@ -302,7 +120,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                         .cs(cs)
                         .boxPosition(new PDFBoxBuilder.BoxPosition(
                                 boxX - 10,
-                                (pageHeight / 2) - 10,
+                                (pageHeight / 2) - 20,
                                 2100,
                                 80))
                         .boxText(PDFBoxBuilder.BoxText.builder()
@@ -316,7 +134,7 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .strokeColor(new Color(33, 87, 50))
                                 .strokeLine(2)
                                 .fillColor(new Color(33, 87, 50))
-                                .rounded(0)
+                                .rounded(5)
                                 .build())
                         .build()
         );
@@ -333,200 +151,187 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
                                 .text(slide1Data.incidentDescription)
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.BLACK)
-                                .fontSize(30)
+                                .fontSize(25)
                                 .align(TextAlignment.LEFT)
                                 .build())
                         .build()
         );
 
         boxX = boxX-10;
-        boxY = (pageHeight / 2) - 570;
-        boxWidth = 650;
-        boxHeight = 200;
+        boxY = (pageHeight / 2) - 500;
+        boxWidth = 1025;
+        boxHeight = 150;
 
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX,
-                                boxY,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(String.format("%s", slide1Data.injuriesPerson))
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(new Color(177, 30, 27))
-                                .fontSize(50)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeLine(10)
-                                .strokeColor(new Color(247, 204, 203))
-                                .fillColor(new Color(252, 243, 242))
-                                .rounded(10)
-                                .build())
-                        .build()
+        drawStatBox(
+                cs,
+                boxX, boxY, boxWidth, boxHeight,
+                String.valueOf(slide1Data.injuriesPerson),
+                "Cedera",
+                "Personel",
+                new Color(250, 177, 177),
+                new Color(255, 229, 229),
+                defaultPDFComponent
         );
 
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX,
-                                boxY + (boxHeight / 2) - 50,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Cedera")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(new Color(212, 36, 34))
-                                .fontSize(25)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX,
-                                boxY + (boxHeight / 2) - 150,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Personel")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.GRAY)
-                                .fontSize(25)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .build()
-        );
-
-        float boxX2 = (pageWidth / 2 - boxWidth / 2) - 15;
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX2,
-                                boxY,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(String.format("%s", slide1Data.brokenEquipment))
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(new Color(128, 78, 19))
-                                .fontSize(50)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeLine(10)
-                                .strokeColor(new Color(252, 241, 148))
-                                .fillColor(new Color(254, 252, 234))
-                                .rounded(10)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX2,
-                                boxY + (boxHeight / 2) - 50,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Kerusakan Peralatan")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(new Color(161, 106, 25))
-                                .fontSize(25)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX2,
-                                boxY + (boxHeight / 2) - 150,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Unit Heavy Equipment")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.GRAY)
-                                .fontSize(25)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .build()
-        );
-
-        float boxX3 = (pageWidth - boxX + 10 - boxWidth) - 30;
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX3,
-                                boxY,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(String.format("%s", slide1Data.hoursDowntime))
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(new Color(35, 70, 221))
-                                .fontSize(50)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeLine(10)
-                                .strokeColor(new Color(196, 218, 252))
-                                .fillColor(new Color(240, 246, 254))
-                                .rounded(10)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX3,
-                                boxY + (boxHeight / 2) - 50,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Downtime")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(new Color(114, 147, 246))
-                                .fontSize(25)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .build()
-        );
-
-        pdfBoxBuilder.drawBox(
-                PDFBoxBuilder.PDFBoxDrawingParam.builder()
-                        .cs(cs)
-                        .boxPosition(new PDFBoxBuilder.BoxPosition(
-                                boxX3,
-                                boxY + (boxHeight / 2) - 150,
-                                boxWidth,
-                                boxHeight))
-                        .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text("Jam Operasi")
-                                .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(Color.GRAY)
-                                .fontSize(25)
-                                .align(TextAlignment.CENTER)
-                                .build())
-                        .build()
+        drawStatBox(
+                cs,
+                boxX-10 + boxWidth + 50, boxY, boxWidth, boxHeight,
+                String.valueOf(slide1Data.brokenEquipment),
+                "Kerusakan Peralatan",
+                "Unit Heavy Equipment",
+                new Color(252, 241, 148),
+                new Color(254, 252, 234),
+                defaultPDFComponent
         );
 
         cs.close();
     }
+
+    private void drawStatBox (
+            PDPageContentStream cs,
+            float x,
+            float y,
+            float boxWidth,
+            float boxHeight,
+            String valueText,
+            String titleText,
+            String subtitleText,
+            Color strokeColor,
+            Color fillColor,
+            DefaultPDFComponent defaultPDFComponent
+    ) throws IOException {
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y, boxWidth, boxHeight))
+                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
+                                .strokeLine(5)
+                                .strokeColor(strokeColor)
+                                .fillColor(fillColor)
+                                .rounded(10)
+                                .build())
+                        .build()
+        );
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x+ 10, y-30, boxWidth, boxHeight))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text(valueText)
+                                .font(defaultPDFComponent.getFontBold())
+                                .fontColor(Color.BLACK)
+                                .fontSize(50)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+
+        );
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x + 10, y + 30,
+                                boxWidth, boxHeight))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text(titleText)
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.GRAY)
+                                .fontSize(25)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x + 60, y - 38,
+                                boxWidth - 10, boxHeight))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text(subtitleText)
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.BLACK)
+                                .fontSize(25)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+    }
+
+    private void drawInfoSection(
+            PDPageContentStream cs,
+            float x,
+            float y,
+            float boxWidth,
+            float boxHeight,
+            String label,
+            String value,
+            float labelOffsetX,
+            float labelOffsetY,
+            float valueOffsetX,
+            float valueOffsetY,
+            DefaultPDFComponent defaultPDFComponent,
+            PDImageXObject icon
+    ) throws IOException{
+
+        // Background box
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(x, y, boxWidth, boxHeight))
+                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
+                                .strokeColor(new Color(213, 219, 229))
+                                .strokeLine(2)
+                                .fillColor(new Color(249, 250, 252))
+                                .rounded(7)
+                                .build())
+                        .build()
+        );
+
+        cs.drawImage(icon, x + labelOffsetX - 30,  y + 78, 30, 30);
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x + labelOffsetX - 10,
+                                y + labelOffsetY,
+                                boxWidth,
+                                boxHeight))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text(label)
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.GRAY)
+                                .fontSize(25)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x + valueOffsetX,
+                                y + valueOffsetY,
+                                boxWidth,
+                                boxHeight))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text(value)
+                                .font(defaultPDFComponent.getFontBold())
+                                .fontColor(Color.BLACK)
+                                .fontSize(30)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+    }
+
 
 }

@@ -39,6 +39,7 @@ public class PDFBoxBuilder {
         protected Color fillColor;
         protected float rounded;
         protected float strokeLine;
+        protected float padding;
     }
 
     @Builder
@@ -63,8 +64,19 @@ public class PDFBoxBuilder {
     }
 
     public void drawBox(PDFBoxDrawingParam param) throws IOException {
-        param.boxStyle = param.boxStyle != null ? param.boxStyle : new BoxStyle(null, null, 0, 0);
 
+        // Default style if none
+        param.boxStyle = param.boxStyle != null
+                ? param.boxStyle
+                : new BoxStyle(null, null, 0, 0, 20);
+
+        float padding = (param.boxText != null && param.boxStyle.padding > 0)
+                ? param.boxStyle.padding
+                : 20;
+
+        // -------------------------
+        // 1. Draw box (stroke + fill)
+        // -------------------------
         if (param.boxStyle.strokeColor != null) {
             param.cs.setStrokingColor(param.boxStyle.strokeColor);
             param.cs.setLineWidth(param.boxStyle.strokeLine);
@@ -73,8 +85,11 @@ public class PDFBoxBuilder {
                 drawRoundedBox(param);
             } else {
                 param.cs.addRect(
-                        param.boxPosition.boxX, param.boxPosition.boxY,
-                        param.boxPosition.boxWidth, param.boxPosition.boxHeight);
+                        param.boxPosition.boxX,
+                        param.boxPosition.boxY,
+                        param.boxPosition.boxWidth,
+                        param.boxPosition.boxHeight
+                );
             }
 
             param.cs.stroke();
@@ -85,25 +100,35 @@ public class PDFBoxBuilder {
                 if (param.boxStyle.rounded > 0) {
                     drawRoundedBox(param);
                 } else {
-                    param.cs.addRect(param.boxPosition.boxX, param.boxPosition.boxY, param.boxPosition.boxWidth, param.boxPosition.boxHeight);
+                    param.cs.addRect(
+                            param.boxPosition.boxX,
+                            param.boxPosition.boxY,
+                            param.boxPosition.boxWidth,
+                            param.boxPosition.boxHeight
+                    );
                 }
 
                 param.cs.fill();
             }
         }
 
+        // -------------------------
+        // 2. Draw Text
+        // -------------------------
         if (param.boxText != null) {
-            // 2. Prepare wrapped lines (supporting \n)
+
             List<String> lines = new ArrayList<>();
-            float maxWidth = param.boxPosition.boxWidth - 40;  // left+right padding
+            float maxWidth = param.boxPosition.boxWidth - (padding * 2);
             float lineHeight = param.boxText.fontSize * 1.3f;
 
-            // Normalize line breaks and split into "paragraphs"
-            String[] rawLines = param.boxText.text.replace("\r\n", "\n")
+            // Split paragraphs on newline
+            String[] rawLines = param.boxText.text
+                    .replace("\r\n", "\n")
                     .replace('\r', '\n')
                     .split("\n");
 
             for (String raw : rawLines) {
+
                 if (raw.isEmpty()) {
                     lines.add("");
                     continue;
@@ -129,17 +154,15 @@ public class PDFBoxBuilder {
                 }
             }
 
-            if (lines.isEmpty()) {
-                return; // nothing to draw
-            }
+            if (lines.isEmpty()) return;
 
-            // 3. Limit by box height
+            // Limit lines by box height
             int maxLines = (int) (param.boxPosition.boxHeight / lineHeight);
             if (lines.size() > maxLines) {
                 lines = lines.subList(0, maxLines);
             }
 
-            // 4. Start writing text
+            // Start writing
             param.cs.beginText();
             param.cs.setFont(param.boxText.font, param.boxText.fontSize);
             param.cs.setNonStrokingColor(param.boxText.fontColor);
@@ -147,30 +170,36 @@ public class PDFBoxBuilder {
             float cursorY;
 
             if (lines.size() == 1) {
-                cursorY = param.boxPosition.boxY + (param.boxPosition.boxHeight / 2f) - (param.boxText.fontSize / 3f);
+                cursorY =
+                        param.boxPosition.boxY
+                                + (param.boxPosition.boxHeight / 2f)
+                                - (param.boxText.fontSize / 3f);
             } else {
-                cursorY = param.boxPosition.boxY + param.boxPosition.boxHeight - param.boxText.fontSize * 1.2f;
+                cursorY =
+                        param.boxPosition.boxY
+                                + param.boxPosition.boxHeight
+                                - param.boxText.fontSize * 1.2f
+                                - padding;
             }
 
             for (String line : lines) {
                 float lineWidth = param.boxText.font.getStringWidth(line) / 1000 * param.boxText.fontSize;
 
                 float textX = switch (param.boxText.align) {
-                    case LEFT -> param.boxPosition.boxX + 20;
-                    case RIGHT -> param.boxPosition.boxX + param.boxPosition.boxWidth - lineWidth - 20;
-                    default -> param.boxPosition.boxX + (param.boxPosition.boxWidth - lineWidth) / 2f; // CENTER
+                    case LEFT -> param.boxPosition.boxX + padding;
+                    case RIGHT -> param.boxPosition.boxX + param.boxPosition.boxWidth - lineWidth - padding;
+                    default -> param.boxPosition.boxX + (param.boxPosition.boxWidth - lineWidth) / 2f;
                 };
 
                 param.cs.newLineAtOffset(textX, cursorY);
                 param.cs.showText(line);
-                param.cs.newLineAtOffset(-textX, -cursorY); // reset offset
+                param.cs.newLineAtOffset(-textX, -cursorY);
 
                 cursorY -= lineHeight;
             }
 
             param.cs.endText();
         }
-
     }
 
     public void drawRoundedBox(

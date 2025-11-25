@@ -35,7 +35,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
         String formattedDate = request.dateToWIB().format(formatter);
         return new CoverData(
                 request.getUnitName(), formattedDate,
-                request.getLocation(), request.getCategory(),
+                request.getLocation().getLocationName(), request.getCategory(),
                 request.getTitle());
     }
 
@@ -120,9 +120,8 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
         // ===========================
         float colY = pageHeight / 2 - 200;
         float colSize = 450f;
-        float colHeight = 50f;
-        float rangeBetweenCol = 60;
-        Color greenAdjusted = new Color(88, 181, 115);
+        float colHeight = 45f;
+        float rangeBetweenCol = 50;
 
         float col1X = 400;
 
@@ -138,7 +137,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                         .boxText(PDFBoxBuilder.BoxText.builder()
                                 .text("Tanggal Insiden")
                                 .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(greenAdjusted)
+                                .fontColor(Color.WHITE)
                                 .fontSize(30)
                                 .align(TextAlignment.CENTER)
                                 .build())
@@ -154,7 +153,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 colHeight))
                         .boxText(PDFBoxBuilder.BoxText.builder()
                                 .text(coverData.date)
-                                .font(defaultPDFComponent.getFontRegular())
+                                .font(defaultPDFComponent.getFontBold())
                                 .fontColor(Color.WHITE)
                                 .fontSize(30)
                                 .align(TextAlignment.CENTER)
@@ -168,11 +167,11 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                         .cs(cs)
                         .boxPosition(new PDFBoxBuilder.BoxPosition(
                                 col2X - 20,
-                                colY - 60,
+                                colY - 40,
                                 1,
-                                colHeight * 2 + 10))
+                                colHeight * 2 - 10))
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(greenAdjusted)
+                                .strokeColor(Color.WHITE)
                                 .build())
                         .build());
 
@@ -187,7 +186,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                         .boxText(PDFBoxBuilder.BoxText.builder()
                                 .text("Lokasi")
                                 .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(greenAdjusted)
+                                .fontColor(Color.WHITE)
                                 .fontSize(30)
                                 .align(TextAlignment.CENTER)
                                 .build())
@@ -203,7 +202,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 colHeight))
                         .boxText(PDFBoxBuilder.BoxText.builder()
                                 .text(coverData.location)
-                                .font(defaultPDFComponent.getFontRegular())
+                                .font(defaultPDFComponent.getFontBold())
                                 .fontColor(Color.WHITE)
                                 .fontSize(30)
                                 .align(TextAlignment.CENTER)
@@ -219,11 +218,11 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                         .cs(cs)
                         .boxPosition(new PDFBoxBuilder.BoxPosition(
                                 col3X - 20,
-                                colY - 60,
+                                colY - 40,
                                 1,
-                                colHeight * 2 + 10))
+                                colHeight * 2 - 10))
                         .boxStyle(PDFBoxBuilder.BoxStyle.builder()
-                                .strokeColor(greenAdjusted)
+                                .strokeColor(Color.WHITE)
                                 .build())
                         .build());
 
@@ -238,7 +237,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                         .boxText(PDFBoxBuilder.BoxText.builder()
                                 .text("Kategori")
                                 .font(defaultPDFComponent.getFontRegular())
-                                .fontColor(greenAdjusted)
+                                .fontColor(Color.WHITE)
                                 .fontSize(30)
                                 .align(TextAlignment.CENTER)
                                 .build())
@@ -254,7 +253,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 colHeight))
                         .boxText(PDFBoxBuilder.BoxText.builder()
                                 .text(coverData.category)
-                                .font(defaultPDFComponent.getFontRegular())
+                                .font(defaultPDFComponent.getFontBold())
                                 .fontColor(Color.WHITE)
                                 .fontSize(30)
                                 .align(TextAlignment.CENTER)

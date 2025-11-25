@@ -5,16 +5,18 @@ import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
 import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 
 @Component
 public class Slide2IncidentPDFReport extends IncidentPDFPage {
@@ -25,116 +27,415 @@ public class Slide2IncidentPDFReport extends IncidentPDFPage {
 
     @AllArgsConstructor
     private static class Slide2Data {
-        private String date;
-        private String location;
-        private String category;
-        private String personnelCategories;
-        private String incidentDescription;
-        private int injuriesPerson;
-        private int brokenEquipment;
-        private int hoursDowntime;
+
+    }
+
+    @AllArgsConstructor
+    private static class Person {
+        private String name;
+        private String sidNumber;
+        private int age;
+        private String position;
+        private String company;
+        private int workExperience;
+        private String mcuValidUntil;
+        private String profiling;
+        private List<String> competence;
+    }
+
+    @AllArgsConstructor
+    public static class SectionResult {
+        public PDPageContentStream cs;
+        public int personsUsed;
+        public boolean nextPage;
     }
 
     private Slide2Data toSlide2Data(RequestPDFData request) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, 'Pukul' hh:mm 'WIB'");
-        String formattedDate = request.dateToWIB().format(formatter);
-        return new Slide2Data(formattedDate,
-                request.getLocation(), request.getCategory(),
-                request.getPersonnelCategories(),
-                request.getIncidentDescription(), request.getInjuriesPerson(),
-                request.getBrokenEquipment(), request.getHoursDowntime());
+        return new Slide2Data();
+    }
+
+    private PDPageContentStream newSlide (
+            PDPageContentStream lastCs,
+            DefaultPDFComponent defaultPDFComponent
+    ) throws IOException{
+        if (lastCs != null) {
+            lastCs.close();
+        }
+
+        PDPage page = initPage(defaultPDFComponent);
+        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
+        initSlidePage(defaultPDFComponent, cs, 2, "Data Korban dan Pelaku");
+
+        return cs;
     }
 
     public void generatePage(
             RequestPDFData request,
             DefaultPDFComponent defaultPDFComponent
     ) throws IOException {
-        Slide2Data slide1Data = toSlide2Data(request);
-        PDPage page = initPage(defaultPDFComponent);
+        Slide2Data slide2Data = toSlide2Data(request);
 
-        PDRectangle rect = page.getMediaBox();
-        float pageWidth = rect.getWidth();
-        float pageHeight = rect.getHeight();
+        float pageHeight = defaultPDFComponent.getCustomSize().getHeight();
 
-        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
-        initSlidePage(defaultPDFComponent, cs, 1, "Ringkasan Insiden");
+        PDPageContentStream cs = newSlide(null, defaultPDFComponent);
+        drawInfoBox(cs, pageHeight, defaultPDFComponent);
 
-        float tableX = 40;
-        float tableY = page.getMediaBox().getHeight() - 80;
+        Person person = new Person("Test Name", "1233", 23, "Tesstt", "Yuhuuu", 5, "32", "Merah", List.of("Test (12 Desember 2021)", "Test 2 ", "Test (12 Desember 2021)"));
 
-        // -------------------------
-        // 1️⃣ DEFINE TABLE COLUMNS
-        // -------------------------
-        List<PDFTableBuilder.TableColumn> columns = List.of(
-                new PDFTableBuilder.TableColumn("Layer", 300, TextAlignment.CENTER, TextAlignment.LEFT),
-                new PDFTableBuilder.TableColumn("Yang Diharapkan", 450, TextAlignment.CENTER, TextAlignment.LEFT),
-                new PDFTableBuilder.TableColumn("Yang Terjadi", 450, TextAlignment.CENTER, TextAlignment.CENTER),
-                new PDFTableBuilder.TableColumn("Rekomendasi Perbaikan", 450, TextAlignment.CENTER, TextAlignment.LEFT),
-                new PDFTableBuilder.TableColumn("Status", 150, TextAlignment.CENTER, TextAlignment.CENTER)
+        SectionResult result = drawPictureSection(cs, 110, pageHeight - 310, "Data Saksi", defaultPDFComponent, List.of(person, person, person, person, person, person), 0);
+        cs = result.cs;
+
+        float y = result.nextPage ? pageHeight - 280 : 630;
+        result = drawPictureSection(cs, 110, y, "Data Pengawas", defaultPDFComponent, List.of(person, person), result.personsUsed);
+        cs = result.cs;
+
+        y = result.nextPage ? pageHeight - 250 : 630;
+        if (result.nextPage) {
+            cs = newSlide(cs, defaultPDFComponent);
+        }
+        drawFieldFacts(y, cs, defaultPDFComponent, List.of("Test Line 1", "Test Line 2", "Test Line 3", "Test Line 4"));
+        cs.close();
+    }
+
+    private void drawInfoBox (
+            PDPageContentStream cs,
+            float pageHeight,
+            DefaultPDFComponent defaultPDFComponent
+    ) throws IOException {
+
+        float x = 110;
+        float y = (pageHeight - 290);
+        float boxWidth = 2100;
+        float boxHeight = 70;
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y, boxWidth, boxHeight))
+                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
+                                .strokeLine(5)
+                                .strokeColor(new Color(0, 108, 235))
+                                .fillColor(new Color(235, 243, 253))
+                                .rounded(10)
+                                .build())
+                        .build()
         );
 
-        // -------------------------
-        // 2️⃣ DEFINE ROW DATA
-        // -------------------------
-        List<List<String>> rows = List.of(
-                List.of(
-                        "Layer 1\nEngineering Design",
-                        "Sistem hidrolik dirancang dengan pressure relief valve dan sensor tekanan",
-                        "Tidak ada sensor tekanan real-time untuk monitoring kondisi sistem",
-                        "Instalasi sensor tekanan hidrolik dengan alert system",
-                        "X"
-                ),
-                List.of(
-                        "Layer 2\nAdministrative Controls",
-                        "Jadwal PM ketat dengan auto-stop unit yang melewati due date Test Panjangin Text\n Lebih Panjang lagi",
-                        "PM schedule tidak enforced, unit tetap operasi meski overdue 6 bulan",
-                        "Implementasi sistem auto-lock untuk unit overdue PM",
-                        "X"
-                ),
-                List.of(
-                        "Layer 3\nSupervision & Training",
-                        "Operator & supervisor mengenali early warning hydraulic failure",
-                        "Operator lanjutkan operasi meski dengar suara abnormal",
-                        "Program training intensif hydraulic system early warning",
-                        "X"
-                )
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x+50, y+15, boxWidth, boxHeight))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("Catatan")
+                                .font(defaultPDFComponent.getFontBold())
+                                .fontColor(Color.BLACK)
+                                .fontSize(18)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
         );
 
-        // -------------------------
-        // 3️⃣ STYLE TABLE (OPTIONAL)
-        // -------------------------
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x+50, y-15,
+                                boxWidth, boxHeight))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("Tidak ada korban jiwa atau luka dalam insiden ini. Data di bawah menunjukan personel yang terlibat langsung dalam kejadian")
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.BLACK)
+                                .fontSize(18)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+    }
+
+    private SectionResult drawPictureSection (
+            PDPageContentStream cs,
+            float x, float y,
+            String sectionName,
+            DefaultPDFComponent defaultPDFComponent,
+            List<Person> persons,
+            int usedOnPage
+    ) throws IOException {
+
+        final int MAX_PER_PAGE = 4;
+        boolean firstPage = true;
+
+        int index = 0;
+
+        float defaultYDeduction = 80;
+        float Ydeduction = defaultYDeduction;
+        float deductionForResetPage = 10;
+
+        while (index < persons.size()) {
+            int remainingPageCapacity = MAX_PER_PAGE - usedOnPage;
+            int left = persons.size() - index;
+            int countThisPage = Math.min(left, remainingPageCapacity);
+
+            if (countThisPage == 0) {
+                cs = newSlide(cs, defaultPDFComponent);
+                y = 1070;
+                usedOnPage = 0;
+                continue;
+            }
+
+            List<List<String>> emptyRows = emptyRowsFor(countThisPage);
+
+            List<PDFTableBuilder.TableColumn> columns =
+                    List.of(new PDFTableBuilder.TableColumn(
+                            sectionName, 2100, TextAlignment.LEFT, TextAlignment.LEFT));
+
+            PDFTableBuilder.TableStyle style = PDFTableBuilder.TableStyle.builder()
+                    .bodyStyle(PDFTableBuilder.BodyStyle.builder()
+                            .bodyFontSize(20)
+                            .bodyTextColor(Color.black)
+                            .evenRowBgColor(Color.WHITE)
+                            .oddRowBgColor(Color.WHITE)
+                            .rowHeight(410)
+                            .font(defaultPDFComponent.getFontRegular())
+                            .fontBold(defaultPDFComponent.getFontBold())
+                            .build())
+                    .headerStyle(PDFTableBuilder.HeaderStyle.builder()
+                            .headerFontSize(30)
+                            .headerBgColor(new Color(24, 94, 57))
+                            .headerTextColor(Color.WHITE)
+                            .headerHeight(65)
+                            .font(defaultPDFComponent.getFontRegular())
+                            .build())
+                    .cornerRadius(20)
+                    .lineColor(Color.GRAY)
+                    .borderWidth(3)
+                    .padding(15)
+                    .showHeader(firstPage)
+                    .build().gridLine(3, true, true, false, false);
+
+            firstPage = false;
+
+            pdfTableBuilder.drawTable(
+                    PDFTableBuilder.PDFTableParam.builder()
+                            .cs(cs)
+                            .tablePosition(new PDFTableBuilder.TablePosition(x, y))
+                            .columns(columns)
+                            .rows(emptyRows)
+                            .tableStyle(style)
+                            .build());
+
+            y -= Ydeduction;
+            if (Ydeduction == deductionForResetPage) {
+                Ydeduction = defaultYDeduction;
+            }
+
+            for (int k = 0; k < countThisPage; k++) {
+
+                Person p = persons.get(index + k);
+                float offsetX = ((k % 2) == 0) ? 70 : 1070;
+                float xPoint = x + offsetX;
+
+                drawPersonBox(cs, xPoint, y, p, defaultPDFComponent);
+
+                if (k % 2 == 1) {
+                    y -= 413;
+                }
+            }
+
+            index += countThisPage;
+            usedOnPage += countThisPage;
+
+            if (index < persons.size()) {
+                cs = newSlide(cs, defaultPDFComponent);
+                y = 1070;
+                firstPage = false;
+                usedOnPage = 0;
+                Ydeduction = deductionForResetPage;
+            }
+        }
+
+        if (usedOnPage % 2 == 1){
+            usedOnPage ++;
+        }
+
+        return new SectionResult(cs, usedOnPage, usedOnPage == MAX_PER_PAGE);
+    }
+
+    private List<List<String>> emptyRowsFor(int count) {
+        int rows = (int) Math.ceil(count / 2.0);
+        List<List<String>> result = new ArrayList<>();
+        for (int i = 0; i < rows; i++) {
+            result.add(List.of(""));
+        }
+        return result;
+    }
+
+    private void drawPersonBox (
+        PDPageContentStream cs,
+        float x, float y, Person person,
+        DefaultPDFComponent defaultPDFComponent
+    ) throws IOException {
+        List<PDFTableBuilder.TableColumn> columns = List.of(new PDFTableBuilder.TableColumn("Data Saksi", 960, TextAlignment.LEFT, TextAlignment.LEFT));
+        List<List<String>> rows = List.of(List.of(""));
+
         PDFTableBuilder.TableStyle style = PDFTableBuilder.TableStyle.builder()
                 .bodyStyle(PDFTableBuilder.BodyStyle.builder()
                         .bodyFontSize(20)
                         .bodyTextColor(Color.black)
                         .evenRowBgColor(Color.WHITE)
                         .oddRowBgColor(Color.WHITE)
+                        .rowHeight(380)
                         .font(defaultPDFComponent.getFontRegular())
+                        .fontBold(defaultPDFComponent.getFontBold())
                         .build())
                 .headerStyle(PDFTableBuilder.HeaderStyle.builder()
-                        .headerFontSize(22)
+                        .headerFontSize(30)
                         .headerBgColor(new Color(24, 94, 57))
                         .headerTextColor(Color.WHITE)
-                        .font(defaultPDFComponent.getFontBold())
+                        .headerHeight(65)
+                        .font(defaultPDFComponent.getFontRegular())
                         .build())
-                .cornerRadius(10)
-                .lineColor(Color.WHITE)
+                .cornerRadius(0)
+                .showHeader(false)
+                .padding(15)
                 .build();
 
-        // -------------------------
-        // 4️⃣ DRAW ROUNDED TABLE
-        // -------------------------
         pdfTableBuilder.drawTable(
                 PDFTableBuilder.PDFTableParam.builder()
-                    .cs(cs)
-                    .tablePosition(new PDFTableBuilder.TablePosition(50, pageHeight-200))
-                    .columns(columns)
-                    .rows(rows)
-                    .tableStyle(style)
-                    .build()
-        );
+                        .cs(cs)
+                        .tablePosition(new PDFTableBuilder.TablePosition(x, y))
+                        .columns(columns)
+                        .rows(rows)
+                        .tableStyle(style)
+                        .build());
 
-        cs.close();
+        columns = List.of(new PDFTableBuilder.TableColumn("", 200, TextAlignment.LEFT, TextAlignment.LEFT),
+                new PDFTableBuilder.TableColumn("", 440, TextAlignment.LEFT, TextAlignment.LEFT));
+
+        rows = List.of(
+                List.of("Nama", String.format("**%s**", person.name)),
+                List.of("SID", String.format("**%s**", person.sidNumber)),
+                List.of("Umur", String.format("**%s**", person.age)),
+                List.of("Jabatan", String.format("**%s**", person.position)),
+                List.of("Perusahaan", String.format("**%s**", person.company)),
+                List.of("Pengalaman", String.format("**%s Tahun**", person.workExperience)),
+                List.of("MCU Berlaku", String.format("**%s**", person.mcuValidUntil)),
+                List.of("Profiling", String.format("**%s**", person.profiling)),
+                List.of("Kompetensi", ""));
+
+        style = PDFTableBuilder.TableStyle.builder()
+                .bodyStyle(PDFTableBuilder.BodyStyle.builder()
+                        .bodyFontSize(20)
+                        .bodyTextColor(Color.black)
+                        .evenRowBgColor(Color.WHITE)
+                        .oddRowBgColor(Color.WHITE)
+                        .font(defaultPDFComponent.getFontRegular())
+                        .fontBold(defaultPDFComponent.getFontBold())
+                        .build())
+                .headerStyle(PDFTableBuilder.HeaderStyle.builder().font(defaultPDFComponent.getFontRegular()).build())
+                .showHeader(false)
+                .padding(3)
+                .build();
+
+        cs.drawImage(defaultPDFComponent.pictureProfile, x + 30, y - 180, 150, 150);
+
+        pdfTableBuilder.drawTable(
+                PDFTableBuilder.PDFTableParam.builder()
+                        .cs(cs)
+                        .tablePosition(new PDFTableBuilder.TablePosition(x + 220, y - 10))
+                        .columns(columns)
+                        .rows(rows)
+                        .tableStyle(style)
+                        .build());
+
+        columns = List.of(new PDFTableBuilder.TableColumn("", 10, TextAlignment.LEFT, TextAlignment.LEFT),
+                new PDFTableBuilder.TableColumn("", 430, TextAlignment.LEFT, TextAlignment.LEFT));
+
+        rows = person.competence.stream().map(
+                competence -> List.of("**•**", String.format("**%s**", competence))).toList();
+
+        style.setPadding(3);
+        pdfTableBuilder.drawTable(
+                PDFTableBuilder.PDFTableParam.builder()
+                        .cs(cs)
+                        .tablePosition(new PDFTableBuilder.TablePosition(x + 420, y - 267))
+                        .columns(columns)
+                        .rows(rows)
+                        .tableStyle(style)
+                        .build());
+    }
+
+    private void drawFieldFacts (
+            float y,
+            PDPageContentStream cs,
+            DefaultPDFComponent defaultPDFComponent,
+            List<String> fieldFacts
+    ) throws IOException {
+        List<PDFTableBuilder.TableColumn> columns = List.of(new PDFTableBuilder.TableColumn("Fakta Lapangan", 2100, TextAlignment.LEFT, TextAlignment.LEFT));
+        List<List<String>> rows = List.of(List.of(""));
+
+        PDFTableBuilder.TableStyle style = PDFTableBuilder.TableStyle.builder()
+                .bodyStyle(PDFTableBuilder.BodyStyle.builder()
+                        .bodyFontSize(20)
+                        .bodyTextColor(Color.black)
+                        .evenRowBgColor(Color.WHITE)
+                        .oddRowBgColor(Color.WHITE)
+                        .rowHeight(410)
+                        .font(defaultPDFComponent.getFontRegular())
+                        .fontBold(defaultPDFComponent.getFontBold())
+                        .build())
+                .headerStyle(PDFTableBuilder.HeaderStyle.builder()
+                        .headerFontSize(30)
+                        .headerBgColor(new Color(24, 94, 57))
+                        .headerTextColor(Color.WHITE)
+                        .headerHeight(65)
+                        .font(defaultPDFComponent.getFontRegular())
+                        .build())
+                .cornerRadius(20)
+                .lineColor(Color.GRAY)
+                .borderWidth(2)
+                .padding(15)
+                .build();
+
+        pdfTableBuilder.drawTable(
+                PDFTableBuilder.PDFTableParam.builder()
+                        .cs(cs)
+                        .tablePosition(new PDFTableBuilder.TablePosition(110, y))
+                        .columns(columns)
+                        .rows(rows)
+                        .tableStyle(style)
+                        .build());
+
+        style = PDFTableBuilder.TableStyle.builder()
+                .bodyStyle(PDFTableBuilder.BodyStyle.builder()
+                        .bodyFontSize(20)
+                        .bodyTextColor(Color.black)
+                        .evenRowBgColor(Color.WHITE)
+                        .oddRowBgColor(Color.WHITE)
+                        .font(defaultPDFComponent.getFontRegular())
+                        .fontBold(defaultPDFComponent.getFontBold())
+                        .build())
+                .headerStyle(PDFTableBuilder.HeaderStyle.builder().font(defaultPDFComponent.getFontRegular()).build())
+                .showHeader(false)
+                .build();
+
+        if (!fieldFacts.isEmpty()) {
+            columns = List.of(new PDFTableBuilder.TableColumn("", 20, TextAlignment.LEFT, TextAlignment.LEFT),
+                    new PDFTableBuilder.TableColumn("", 2000, TextAlignment.LEFT, TextAlignment.LEFT));
+
+            rows = fieldFacts.stream().map(
+                    fact -> List.of("**•**", String.format("**%s**", fact))).toList();
+
+            pdfTableBuilder.drawTable(
+                    PDFTableBuilder.PDFTableParam.builder()
+                            .cs(cs)
+                            .tablePosition(new PDFTableBuilder.TablePosition(150, y - 90))
+                            .columns(columns)
+                            .rows(rows)
+                            .tableStyle(style)
+                            .build());
+        }
     }
 
 }

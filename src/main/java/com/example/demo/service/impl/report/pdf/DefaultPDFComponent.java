@@ -7,6 +7,8 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import java.util.Map;
+
 @AllArgsConstructor
 @Getter
 public class DefaultPDFComponent {
@@ -17,4 +19,7 @@ public class DefaultPDFComponent {
 
     PDImageXObject coverBackground;
     PDImageXObject slideBackground;
+    PDImageXObject pictureProfile;
+
+    Map<String, PDImageXObject> icons;
 }

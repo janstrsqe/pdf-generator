@@ -36,9 +36,6 @@ public class IncidentPDFPage {
 
         cs.drawImage(defaultPDFComponent.getSlideBackground(), 0, 0, pageWidth, pageHeight);
 
-        // -----------------------------------------------------------
-        // 2. Page Title
-        // -----------------------------------------------------------
         pdfBoxBuilder.drawBox(
                 PDFBoxBuilder.PDFBoxDrawingParam.builder()
                         .cs(cs)
