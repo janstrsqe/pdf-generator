@@ -5,14 +5,9 @@ import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
 import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
@@ -23,6 +18,8 @@ public class Slide2IncidentPDFReport extends IncidentPDFPage {
 
     public Slide2IncidentPDFReport(PDFBoxBuilder pdfBoxBuilder, PDFTableBuilder pdfTableBuilder) {
         super(pdfBoxBuilder, pdfTableBuilder);
+        this.slideNumber = 2;
+        this.slideName = "Data Korban dan Pelaku";
     }
 
     @AllArgsConstructor
@@ -54,21 +51,6 @@ public class Slide2IncidentPDFReport extends IncidentPDFPage {
         return new Slide2Data();
     }
 
-    private PDPageContentStream newSlide (
-            PDPageContentStream lastCs,
-            DefaultPDFComponent defaultPDFComponent
-    ) throws IOException{
-        if (lastCs != null) {
-            lastCs.close();
-        }
-
-        PDPage page = initPage(defaultPDFComponent);
-        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
-        initSlidePage(defaultPDFComponent, cs, 2, "Data Korban dan Pelaku");
-
-        return cs;
-    }
-
     public void generatePage(
             RequestPDFData request,
             DefaultPDFComponent defaultPDFComponent
@@ -76,7 +58,6 @@ public class Slide2IncidentPDFReport extends IncidentPDFPage {
         Slide2Data slide2Data = toSlide2Data(request);
 
         float pageHeight = defaultPDFComponent.getCustomSize().getHeight();
-
         PDPageContentStream cs = newSlide(null, defaultPDFComponent);
         drawInfoBox(cs, pageHeight, defaultPDFComponent);
 
@@ -86,14 +67,16 @@ public class Slide2IncidentPDFReport extends IncidentPDFPage {
         cs = result.cs;
 
         float y = result.nextPage ? pageHeight - 280 : 630;
-        result = drawPictureSection(cs, 110, y, "Data Pengawas", defaultPDFComponent, List.of(person, person), result.personsUsed);
+        result = drawPictureSection(cs, 110, y, "Data Pengawas", defaultPDFComponent, List.of(person, person, person), result.personsUsed);
         cs = result.cs;
 
         y = result.nextPage ? pageHeight - 250 : 630;
         if (result.nextPage) {
             cs = newSlide(cs, defaultPDFComponent);
         }
+
         drawFieldFacts(y, cs, defaultPDFComponent, List.of("Test Line 1", "Test Line 2", "Test Line 3", "Test Line 4"));
+
         cs.close();
     }
 

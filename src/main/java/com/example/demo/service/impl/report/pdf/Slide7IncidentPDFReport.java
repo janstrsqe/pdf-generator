@@ -5,9 +5,7 @@ import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
 import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -57,6 +55,8 @@ public class Slide7IncidentPDFReport extends IncidentPDFPage {
 
     public Slide7IncidentPDFReport(PDFBoxBuilder pdfBoxBuilder, PDFTableBuilder pdfTableBuilder) {
         super(pdfBoxBuilder, pdfTableBuilder);
+        this.slideNumber = 7;
+        this.slideName = "Analisa Layer of Protection (SBS)";
     }
 
     @AllArgsConstructor
@@ -72,13 +72,8 @@ public class Slide7IncidentPDFReport extends IncidentPDFPage {
             DefaultPDFComponent defaultPDFComponent
     ) throws IOException {
         Slide7Data slide7Data = toSlide7Data(request);
-        PDPage page = initPage(defaultPDFComponent);
-
-        PDRectangle rect = page.getMediaBox();
-        float pageHeight = rect.getHeight();
-
-        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
-        initSlidePage(defaultPDFComponent, cs, 7, "Analisa Layer of Protection (SBS)");
+        float pageHeight = defaultPDFComponent.getCustomSize().getHeight();
+        PDPageContentStream cs = newSlide(null, defaultPDFComponent);
 
         drawInfoBox(cs, pageHeight, defaultPDFComponent);
 
@@ -96,6 +91,7 @@ public class Slide7IncidentPDFReport extends IncidentPDFPage {
         x += addition;
         drawLayer(cs, x, y, pageHeight, defaultPDFComponent, layer5, "Layer 5", "Contact Defense");
 
+        drawLegend(cs, defaultPDFComponent);
         cs.close();
     }
 
@@ -232,6 +228,135 @@ public class Slide7IncidentPDFReport extends IncidentPDFPage {
                                 boxWidth, boxHeight))
                         .boxText(PDFBoxBuilder.BoxText.builder()
                                 .text("Analisa menunjukkan bahwa keempat layer of protection gagal berfungsi secara bersamaan, memungkinkan hazard berkembang menjadi insiden aktual.")
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.BLACK)
+                                .fontSize(18)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+    }
+
+    private void drawLegend(
+            PDPageContentStream cs,
+            DefaultPDFComponent defaultPDFComponent
+    ) throws IOException {
+        float x = 110;
+        float y = 70;
+        float boxWidth = 30;
+        float boxText = 220;
+        float space = 20;
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y, boxWidth, boxWidth))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("")
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.WHITE)
+                                .fontSize(18)
+                                .align(TextAlignment.CENTER)
+                                .build())
+                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
+                                .fillColor(new Color(217, 43, 43))
+                                .strokeColor(new Color(217, 43, 43))
+                                .strokeLine(1)
+                                .rounded(boxWidth/2)
+                                .build())
+                        .build()
+        );
+
+        x += space;
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y - 10, boxText, 50))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("RootCause")
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.BLACK)
+                                .fontSize(18)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+
+        x += boxText;
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y, boxWidth, boxWidth))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("")
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.WHITE)
+                                .fontSize(18)
+                                .align(TextAlignment.CENTER)
+                                .build())
+                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
+                                .fillColor(new Color(255, 207, 64))
+                                .strokeColor(new Color(255, 207, 64))
+                                .strokeLine(1)
+                                .rounded(boxWidth/2)
+                                .build())
+                        .build()
+        );
+
+        x += space;
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y - 10, boxText, 50))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("Non confirmity")
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.BLACK)
+                                .fontSize(18)
+                                .align(TextAlignment.LEFT)
+                                .build())
+                        .build()
+        );
+
+        x += boxText;
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y, boxWidth, boxWidth))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("")
+                                .font(defaultPDFComponent.getFontRegular())
+                                .fontColor(Color.WHITE)
+                                .fontSize(18)
+                                .align(TextAlignment.CENTER)
+                                .build())
+                        .boxStyle(PDFBoxBuilder.BoxStyle.builder()
+                                .fillColor(new Color(27, 178, 125))
+                                .strokeColor(new Color(27, 178, 125))
+                                .strokeLine(1)
+                                .rounded(boxWidth/2)
+                                .build())
+                        .build()
+        );
+
+        x += space;
+
+        pdfBoxBuilder.drawBox(
+                PDFBoxBuilder.PDFBoxDrawingParam.builder()
+                        .cs(cs)
+                        .boxPosition(new PDFBoxBuilder.BoxPosition(
+                                x, y - 10, boxText, 50))
+                        .boxText(PDFBoxBuilder.BoxText.builder()
+                                .text("Improvement")
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.BLACK)
                                 .fontSize(18)

@@ -18,6 +18,23 @@ public class IncidentPDFPage {
 
     protected final PDFBoxBuilder pdfBoxBuilder;
     protected final PDFTableBuilder pdfTableBuilder;
+    public int slideNumber = 0;
+    public String slideName = "";
+
+    protected PDPageContentStream newSlide (
+            PDPageContentStream lastCs,
+            DefaultPDFComponent defaultPDFComponent
+    ) throws IOException{
+        if (lastCs != null) {
+            lastCs.close();
+        }
+
+        PDPage page = initPage(defaultPDFComponent);
+        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
+        initSlidePage(defaultPDFComponent, cs, slideNumber, slideName);
+
+        return cs;
+    }
 
     public PDPage initPage(DefaultPDFComponent defaultPDFComponent){
         PDPage page = new PDPage(defaultPDFComponent.getCustomSize());

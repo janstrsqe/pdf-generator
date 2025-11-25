@@ -107,7 +107,7 @@ public class CoverPageIncidentPDFReport extends IncidentPDFPage {
                                 boxWidth,
                                 120f))
                         .boxText(PDFBoxBuilder.BoxText.builder()
-                                .text(coverData.unitName)
+                                .text("")
                                 .font(defaultPDFComponent.getFontRegular())
                                 .fontColor(Color.WHITE)
                                 .fontSize(45)

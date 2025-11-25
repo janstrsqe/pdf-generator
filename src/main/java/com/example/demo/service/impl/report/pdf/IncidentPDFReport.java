@@ -29,6 +29,7 @@ public class IncidentPDFReport {
     private final Slide4IncidentPDFReport slide4IncidentPDFReport;
     private final Slide5IncidentPDFReport slide5IncidentPDFReport;
     private final Slide7IncidentPDFReport slide7IncidentPDFReport;
+    private final Slide9IncidentPDFReport slide9IncidentPDFReport;
 
     public void generateIncidentReportPDF(RequestPDFData requestPDFData) {
         try (PDDocument document = new PDDocument()) {
@@ -72,6 +73,7 @@ public class IncidentPDFReport {
             slide4IncidentPDFReport.generatePage(requestPDFData, defaultPDFComponent);
             slide5IncidentPDFReport.generatePage(requestPDFData, defaultPDFComponent);
             slide7IncidentPDFReport.generatePage(requestPDFData, defaultPDFComponent);
+            slide9IncidentPDFReport.generatePage(requestPDFData, defaultPDFComponent);
 
             document.save("incident-report.pdf");
 

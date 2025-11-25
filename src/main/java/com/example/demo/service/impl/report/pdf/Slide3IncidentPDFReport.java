@@ -5,16 +5,13 @@ import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
 import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -22,6 +19,8 @@ public class Slide3IncidentPDFReport extends IncidentPDFPage {
 
     public Slide3IncidentPDFReport(PDFBoxBuilder pdfBoxBuilder, PDFTableBuilder pdfTableBuilder) {
         super(pdfBoxBuilder, pdfTableBuilder);
+        this.slideNumber =  3;
+        this.slideName = "Data Lokasi Insiden";
     }
 
     @AllArgsConstructor
@@ -54,13 +53,8 @@ public class Slide3IncidentPDFReport extends IncidentPDFPage {
             DefaultPDFComponent defaultPDFComponent
     ) throws IOException {
         Slide3Data slide3Data = toSlide3Data(request);
-        PDPage page = initPage(defaultPDFComponent);
-
-        PDRectangle rect = page.getMediaBox();
-        float pageHeight = rect.getHeight();
-
-        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
-        initSlidePage(defaultPDFComponent, cs, 3, "Data Lokasi Insiden");
+        float pageHeight = defaultPDFComponent.getCustomSize().getHeight();
+        PDPageContentStream cs = newSlide(null, defaultPDFComponent);
 
         List<PDFTableBuilder.TableColumn> columns = List.of(new PDFTableBuilder.TableColumn("Detail Lokasi", 900, TextAlignment.LEFT, TextAlignment.LEFT));
         List<List<String>> rows = List.of(List.of(""));

@@ -5,21 +5,20 @@ import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
 import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Component
 public class Slide5IncidentPDFReport extends IncidentPDFPage {
 
     public Slide5IncidentPDFReport(PDFBoxBuilder pdfBoxBuilder, PDFTableBuilder pdfTableBuilder) {
         super(pdfBoxBuilder, pdfTableBuilder);
+        this.slideNumber = 5;
+        this.slideName = "Analisa Penyebab Kejadian";
     }
 
     @AllArgsConstructor
@@ -40,13 +39,8 @@ public class Slide5IncidentPDFReport extends IncidentPDFPage {
             DefaultPDFComponent defaultPDFComponent
     ) throws IOException {
         Slide5Data slide5Data = toSlide5Data(request);
-        PDPage page = initPage(defaultPDFComponent);
-
-        PDRectangle rect = page.getMediaBox();
-        float pageHeight = rect.getHeight();
-
-        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
-        initSlidePage(defaultPDFComponent, cs, 5, "Analisa Penyebab Kejadian");
+        float pageHeight = defaultPDFComponent.getCustomSize().getHeight();
+        PDPageContentStream cs = newSlide(null, defaultPDFComponent);
 
         String text = String.format("Tanggal: %s | Lokasi: %s", slide5Data.date, slide5Data.locationName);
         pdfBoxBuilder.drawBox(

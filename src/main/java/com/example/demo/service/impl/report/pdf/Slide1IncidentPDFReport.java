@@ -5,9 +5,7 @@ import com.example.demo.dto.in.RequestPDFData;
 import com.example.demo.util.PDFBoxBuilder;
 import com.example.demo.util.PDFTableBuilder;
 import lombok.AllArgsConstructor;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +18,8 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
 
     public Slide1IncidentPDFReport(PDFBoxBuilder pdfBoxBuilder, PDFTableBuilder pdfTableBuilder) {
         super(pdfBoxBuilder, pdfTableBuilder);
+        this.slideNumber = 1;
+        this.slideName = "Ringkasan Insiden";
     }
 
     @AllArgsConstructor
@@ -49,14 +49,9 @@ public class Slide1IncidentPDFReport extends IncidentPDFPage {
             DefaultPDFComponent defaultPDFComponent
     ) throws IOException {
         Slide1Data slide1Data = toSlide1Data(request);
-        PDPage page = initPage(defaultPDFComponent);
+        float pageHeight = defaultPDFComponent.getCustomSize().getHeight();
 
-        PDRectangle rect = page.getMediaBox();
-        float pageWidth = rect.getWidth();
-        float pageHeight = rect.getHeight();
-
-        PDPageContentStream cs = new PDPageContentStream(defaultPDFComponent.getDocument(), page);
-        initSlidePage(defaultPDFComponent, cs, 1, "Ringkasan Insiden");
+        PDPageContentStream cs = newSlide(null, defaultPDFComponent);
 
         float boxX = 110;
         float boxY = pageHeight - 380;
